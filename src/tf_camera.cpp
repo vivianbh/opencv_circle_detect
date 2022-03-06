@@ -2,6 +2,7 @@
 
 #include "ros/ros.h"
 #include "geometry_msgs/Point.h" 
+#include "geometry_msgs/Twist.h"
 
 #include <iostream>
 #include <eigen3/Eigen/Dense>
@@ -9,6 +10,7 @@
 #include <cmath>
 
 geometry_msgs::Point position;
+geometry_msgs::Twist vel; //
 Eigen::Vector3d pos;
 Eigen::Vector3d trans_pos;
 
@@ -39,6 +41,11 @@ void Transfer(const geometry_msgs::Point::ConstPtr& point)
 	position.x = trans_pos.x();
 	position.y = trans_pos.y();
 	position.z = trans_pos.z();
+
+	vel.linear.x = trans_pos.x(); //
+	vel.linear.y = trans_pos.y();
+	vel.linear.z = trans_pos.z();
+
 	//std::cout << "Kinova Frame" << std::endl;
 	//ROS_INFO("x: %f, y: %f, z: %f", position.x, position.y, position.z);
 }
@@ -49,14 +56,18 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh;
 	ros::Subscriber sub_cam_coordinate;
 	ros::Publisher pub_object_position;
+	ros::Publisher pub_object_vel; //
 	
 	sub_cam_coordinate = nh.subscribe("camera_coordinate", 100, Transfer);
 	ros::Rate r(100);
 
 	while(ros::ok())
 	{
-		pub_object_position = nh.advertise<geometry_msgs::Point>("tennis_position", 100);
+		pub_object_position = nh.advertise<geometry_msgs::Point>("tennis_position_Point", 100);
 		pub_object_position.publish(position);
+
+		pub_object_vel = nh.advertise<geometry_msgs::Twist>("tennis_position", 100);
+		pub_object_vel.publish(vel);
 
 		ros::spinOnce();
 		r.sleep();

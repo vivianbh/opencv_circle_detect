@@ -15,19 +15,19 @@ Eigen::Vector3d pos;
 Eigen::Vector3d trans_pos;
 
 // R: [x-axis 90 degrees -> z-axis 180 degrees]
-// T: [x, y, z] = [0.346, 0.523, 0.393]
+// T: [x, y, z] = [0.110, 0.523, 0.393] (measured)
 void FrameTransfer(Eigen::Vector3d pos)
 {
 	Eigen::Matrix3d R1, R2;
-	Eigen::Vector3d T(0.346, 0.523, 0.393); 
+	Eigen::Vector3d T(0.135, 0.485, 0.360); // (try)
 	float theta_x = 90*M_PI/180;
 	float theta_z = 180*M_PI/180;
 	R1 << 1,             0,            0,
-		  0,  cos(theta_x), sin(theta_x),
-		  0, -sin(theta_x), cos(theta_x);
+	      0,  cos(theta_x), sin(theta_x),
+	      0, -sin(theta_x), cos(theta_x);
 	R2 << cos(theta_z), sin(theta_z), 0,
-		 -sin(theta_z), cos(theta_z), 0,
-		         	 0,       	   0, 1;
+	     -sin(theta_z), cos(theta_z), 0,
+			 0,	       0, 1;
 	trans_pos = R2*R1*pos+T;
 }
 

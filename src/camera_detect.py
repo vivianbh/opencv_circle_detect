@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+
 import rospy
 from geometry_msgs.msg import Point
+from std_msgs.msg import Int32
 import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import numpy as np
@@ -10,7 +13,9 @@ class Detect():
 	def __init__(self):
 		#################### node initialization & create topic ####################
 		rospy.init_node("object_detector", anonymous=False)
+		self.sub = rospy.Subscriber("trigger_kinova", Int32, self.check_jackal)
 		self.pub = rospy.Publisher("camera_coordinate", Point, queue_size= 30)
+		self.flag = Int32()
 		self.data = Point()
 
 		#################### video stream setting ####################
@@ -86,11 +91,17 @@ class Detect():
 		#cv2.imshow("res", self.res)	
 
 	def check_object(self):
-		# check whether the target is found.
-		if len(self.contours) > 0:
+		# check whether the target is found, and check whether jackel is ready at the specific site
+		if len(self.contours) > 0 and self.flag == 1:
 			return True
 		else:
 			return False
+
+	def check_jackal(self, data):
+		if data.data == 1:
+			self.flag =1
+		else:
+			self.flag = 0
 
 	def get_video_size(self):
 		width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -134,6 +145,7 @@ if __name__ == "__main__":
 		d.object_detect()
 		if d.check_object():
 			d.coordinate_publisher()
+			print("already publish!")
 		#d.get_video_size()
 		#d.FPS_estimator()
 		if cv2.waitKey(1) & 0xFF == ord('q'):

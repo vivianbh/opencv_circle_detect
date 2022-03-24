@@ -145,7 +145,6 @@ if __name__ == "__main__":
 		d.object_detect()
 		if d.check_object():
 			d.coordinate_publisher()
-			print("already publish!")
 		#d.get_video_size()
 		#d.FPS_estimator()
 		if cv2.waitKey(1) & 0xFF == ord('q'):

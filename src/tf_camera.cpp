@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	ros::Publisher pub_object_vel; //
 	
 	sub_cam_coordinate = nh.subscribe("camera_coordinate", 100, Transfer);
-	ros::Rate r(100);
+	ros::Rate r(1000);
 
 	while(ros::ok())
 	{

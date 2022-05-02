@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+from email.header import Header
 import rospy
 from geometry_msgs.msg import Point
 from std_msgs.msg import Int32
+from sensor_msgs.msg import Image
+from std_msgs.msg import Header
 import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import numpy as np
@@ -13,13 +16,15 @@ class Detect():
 	def __init__(self):
 		#################### node initialization & create topic ####################
 		rospy.init_node("object_detector", anonymous=False)
-		self.sub = rospy.Subscriber("trigger_kinova", Int32, self.check_jackal)
-		self.pub = rospy.Publisher("camera_coordinate", Point, queue_size= 30)
+		self.sub = rospy.Subscriber("trigger_kinova", Int32, self.check_husky)
+		self.coor_pub = rospy.Publisher("camera_coordinate", Point, queue_size= 30)
+		self.img_pub = rospy.Publisher("camera_image/detect", Image, queue_size=10)
 		self.flag = Int32()
 		self.data = Point()
+		self.img = Image()
 
 		#################### video stream setting ####################
-		self.cap = cv2.VideoCapture(1)
+		self.cap = cv2.VideoCapture(0)
 		self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 		self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 		self.time1 = time.time()
@@ -91,13 +96,13 @@ class Detect():
 		#cv2.imshow("res", self.res)	
 
 	def check_object(self):
-		# check whether the target is found, and check whether jackel is ready at the specific site
+		# check whether target is found, and check whether husky is ready at the specific site
 		if len(self.contours) > 0 and self.flag == 1:
 			return True
 		else:
 			return False
 
-	def check_jackal(self, data):
+	def check_husky(self, data):
 		if data.data == 1:
 			self.flag =1
 		else:
@@ -124,11 +129,22 @@ class Detect():
 	def object_detect(self):
 		self.find_contour()
 		self.bound_contour()
-		self.show_result()
+		#self.show_result()
+
+	def image_publisher(self):
+		header = Header(stamp = rospy.Time.now())
+		header.frame_id = "object"
+		self.img.header = header
+		self.img.height = 480
+		self.img.width = 640
+		self.img.encoding = "bgr8"
+		self.img.step = 640*3
+		self.img.data = np.array(self.frame).tostring()
+		self.img_pub.publish(self.img)
 
 	def coordinate_publisher(self):
 		self.data = self.object_camera_coordinate()
-		self.pub.publish(self.data)
+		self.coor_pub.publish(self.data)
 
 	def FPS_estimator(self):
 		self.time1 = self.time2
@@ -143,6 +159,7 @@ if __name__ == "__main__":
 	d = Detect()
 	while not rospy.is_shutdown():
 		d.object_detect()
+		d.image_publisher()
 		if d.check_object():
 			d.coordinate_publisher()
 		#d.get_video_size()

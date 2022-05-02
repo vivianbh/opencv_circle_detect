@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(NCRL_Huskey_tf)
+project(camera_tf)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -210,5 +210,5 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(tf_camera src/tf_camera.cpp)
-target_link_libraries(tf_camera ${catkin_LIBRARIES})
+add_executable(camera_tf src/camera_tf.cpp)
+target_link_libraries(camera_tf ${catkin_LIBRARIES})

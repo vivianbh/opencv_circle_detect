@@ -1,9 +1,9 @@
 <launch>
 
-    <node pkg="camera_tf" type="camera_tf" name="camera_tf" output="screen" >
+    <node pkg="circle_detect" type="camera_tf" name="camera_tf" output="screen" >
     </node>
 
-    <node pkg="camera_tf" type="camera_detector.py"  name ="camera_detector" output="screen" >
+    <node pkg="circle_detect" type="circle_detector.py"  name ="circle_detector" output="screen" >
     </node>
 
 </launch>

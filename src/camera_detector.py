@@ -15,7 +15,7 @@ import time
 class Detect():
 	def __init__(self):
 		#################### node initialization & create topic ####################
-		rospy.init_node("camera_detector", anonymous=False)
+		rospy.init_node("circle_detector", anonymous=False)
 		self.sub = rospy.Subscriber("trigger_kinova", Int32, self.check_husky)
 		self.coor_pub = rospy.Publisher("camera_coordinate", Point, queue_size= 30)
 		self.img_pub = rospy.Publisher("camera_image/detect", Image, queue_size=10)

@@ -210,5 +210,5 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(camera_tf src/camera_tf.cpp)
-target_link_libraries(camera_tf ${catkin_LIBRARIES})
+add_executable(camera_extrinsics src/camera_extrinsics.cpp)
+target_link_libraries(camera_extrinsics ${catkin_LIBRARIES})

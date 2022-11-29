@@ -13,9 +13,6 @@ Eigen::Vector3d trans_pos;
 // R: [x-axis 90 degrees -> z-axis 90 degrees]
 // T: [x, y, z] = [] (measured)
 void frameTransfer(const geometry_msgs::Point::ConstPtr& point) {
-	pos << point -> x, point -> y, point -> z;
-	FrameTransfer(pos);
-
 	Eigen::Matrix3d R1, R2;
         Eigen::Vector3d T(0.135, 0.485, 0.360);
         float theta_x = 90*M_PI/180;
@@ -26,6 +23,8 @@ void frameTransfer(const geometry_msgs::Point::ConstPtr& point) {
         R2 << cos(theta_z), sin(theta_z), 0,
              -sin(theta_z), cos(theta_z), 0,
                          0,            0, 1;
+
+	pos << point -> x, point -> y, point -> z;
         trans_pos = R2*R1*pos+T;
 
 	position.linear.x = trans_pos.x();

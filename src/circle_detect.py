@@ -58,15 +58,15 @@ class Detect():
 
 	def find_contour(self):
 		ret, self.frame = self.cap.read()
-		hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-		self.mask = cv2.inRange(hsv, self.lower_green, self.upper_green)
-		self.denoise_mask = cv2.morphologyEx(self.mask, cv2.MORPH_OPEN, self.kernel9)
-		self.denoise_mask2 = cv2.morphologyEx(self.denoise_mask, cv2.MORPH_CLOSE, self.kernel5, iterations = 3)
-		self.res = cv2.bitwise_and(self.frame, self.frame, mask = self.denoise_mask2)
-		gray = cv2.cvtColor(self.res, cv2.COLOR_BGR2GRAY)
-		blur = cv2.GaussianBlur(gray, (5, 5), 0)
-		#self.binary_img = cv2.Canny(blur, 20, 160)
-		self.contours = cv2.findContours(blur, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]	
+		self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+		#self.mask = cv2.inRange(hsv, self.lower_green, self.upper_green)
+		#self.denoise_mask = cv2.morphologyEx(self.mask, cv2.MORPH_OPEN, self.kernel9)
+		#self.denoise_mask2 = cv2.morphologyEx(self.denoise_mask, cv2.MORPH_CLOSE, self.kernel5, iterations = 3)
+		#self.res = cv2.bitwise_and(self.frame, self.frame, mask = self.denoise_mask2)
+		#gray = cv2.cvtColor(self.res, cv2.COLOR_BGR2GRAY)
+		self.blur = cv2.GaussianBlur(self.gray, (5, 5), 0)
+		self.binary_img = cv2.Canny(self.blur, 20, 160)
+		self.contours = cv2.findContours(self.binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]	
 
 	def bound_contour(self):
 		# find the biggest target object.
@@ -88,12 +88,51 @@ class Detect():
 		# zero the contour_area
 		self.contour_area = 0
 
+	def houghCircle(self):
+		ret, self.frame_hou = self.cap.read()
+		self.gray_hou = cv2.cvtColor(self.frame_hou, cv2.COLOR_BGR2GRAY)
+		self.blur_hou = cv2.medianBlur(self.gray_hou, 5)
+		self.circles_hou = cv2.HoughCircles(self.blur_hou, cv2.HOUGH_GRADIENT, 1.2, 100, param1=80, param2=70, minRadius=30, maxRadius=100)
+		if self.circles_hou is not None:
+			# convert the (x, y) coordinates and radius of the circles to integers
+			self.circles_hou = np.round(self.circles_hou[0, :]).astype("int")
+			# loop over the (x, y) coordinates and radius of the circles
+			for (x, y, r) in self.circles_hou:
+				# draw the circle in the output image, then draw a rectangle
+				# corresponding to the center of the circle
+				cv2.circle(self.frame_hou, (x, y), r, (0, 255, 0), 4)
+				cv2.rectangle(self.frame_hou, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+				self.x = x
+				self.y = y
+				self.w = 2*r
+			cv2.imshow("output", self.frame_hou)
+
+	def object_coordinate_hou(self):
+		# calculate the camera coordinate by triangle similarity theorem
+		camera_coordinate_z = (self.fx / self.w) * self.object_real_width
+		camera_coordinate_x = (self.x - self.cx) * camera_coordinate_z / self.fx
+		camera_coordinate_y = (self.y - self.cy) * camera_coordinate_z / self.fy
+
+		# record position information
+		data = Point()
+		data.x = camera_coordinate_x
+		data.y = camera_coordinate_y
+		data.z = camera_coordinate_z
+		return data
+
+	def check_object_hou(self):
+		# check whether target is found, and check whether husky is ready at the specific site
+		if self.circles_hou is not None:
+			return True
+		else:
+			return False
+
 	def show_result(self):
 		cv2.imshow("frame", self.frame)
-		#cv2.imshow("mask", self.mask)
+		cv2.imshow("gray", self.gray_hou)
 		#cv2.imshow("denoise_mask", self.denoise_mask)
 		#cv2.imshow("canny", self.binary_img)
-		#cv2.imshow("res", self.res)	
+		cv2.imshow("blur", self.blur_hou)	
 
 	def check_object(self):
 		# check whether target is found, and check whether husky is ready at the specific site
@@ -139,7 +178,7 @@ class Detect():
 		self.img.width = 640
 		self.img.encoding = "bgr8"
 		self.img.step = 640*3
-		self.img.data = np.array(self.frame).tostring()
+		self.img.data = np.array(self.frame_hou).tostring()
 		self.img_pub.publish(self.img)
 
 	def coordinate_publisher(self):
@@ -158,12 +197,14 @@ class Detect():
 if __name__ == "__main__":
 	d = Detect()
 	while not rospy.is_shutdown():
-		d.object_detect()
+		#d.object_detect()
+		d.houghCircle()
 		d.image_publisher()
-		if d.check_object():
+		#d.show_result()
+		if d.check_object_hou():
 			d.coordinate_publisher()
 		#d.get_video_size()
-		#d.FPS_estimator()
+		d.FPS_estimator()
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break	
 	d.end()

@@ -20,6 +20,7 @@ class Detect():
                 self.flag = Int32()
                 self.data = Point()
                 self.img = Image()
+                self.raw_image = np.asanyarray(0)
                 self.color_image = np.asanyarray(0)
                 #################### video stream setting ####################
                 self.pipeline = rs.pipeline()
@@ -89,6 +90,7 @@ class Detect():
 
                 color_frame = frames.get_color_frame()
                 self.color_image = np.asanyarray(color_frame.get_data())
+                self.raw_image = self.color_image
         
         def show_result(self):
                 cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
@@ -123,7 +125,7 @@ class Detect():
                         self.bound_contour()
 
         def image_publisher(self):
-                gray_img = cv2.cvtColor(self.color_image, cv2.COLOR_BGR2GRAY)
+                gray_img = cv2.cvtColor(self.raw_image, cv2.COLOR_BGR2GRAY)
                 header = Header(stamp = rospy.Time.now())
                 header.frame_id = "object"
                 self.img.header = header

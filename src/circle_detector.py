@@ -131,8 +131,8 @@ class Detect():
                 self.img.header = header
                 self.img.height = 720
                 self.img.width = 1280
-                self.img.encoding = "mono8" #"bgr8"#"mono8"
-                self.img.step = 320*3
+                self.img.encoding = "bgr8" #"bgr8"#"mono8"
+                self.img.step = 1280*3  #320*3
                 self.img.data = np.array(gray_img).tobytes()
                 self.img_pub.publish(self.img)
 

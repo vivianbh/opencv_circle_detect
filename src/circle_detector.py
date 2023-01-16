@@ -15,11 +15,13 @@ class Detect():
         def __init__(self):
                 #################### node initialization & create topic ####################
                 rospy.init_node("circle_detector", anonymous=False)
-                self.coor_pub = rospy.Publisher("camera/disk_position", Point, queue_size= 30)
-                self.img_pub = rospy.Publisher("camera_image/detected", Image, queue_size=5)
+                self.coor_pub = rospy.Publisher("camera/disk_position", Point, queue_size= 10)
+                self.img_pub = rospy.Publisher("camera_image/detected", Image, queue_size=2)
+                self.imgColor_pub = rospy.Publisher("camera_image/detected/color", Image, queue_size=2)
                 self.flag = Int32()
                 self.data = Point()
                 self.img = Image()
+                self.imgColor = Image()
                 self.raw_image = np.asanyarray(0)
                 self.color_image = np.asanyarray(0)
                 #################### video stream setting ####################
@@ -125,16 +127,27 @@ class Detect():
                         self.bound_contour()
 
         def image_publisher(self):
-                gray_img = cv2.cvtColor(self.raw_image, cv2.COLOR_BGR2GRAY)
+                gray_img = cv2.cvtColor(self.color_image, cv2.COLOR_BGR2GRAY)
                 header = Header(stamp = rospy.Time.now())
                 header.frame_id = "object"
                 self.img.header = header
                 self.img.height = 720
                 self.img.width = 1280
-                self.img.encoding = "bgr8" #"bgr8"#"mono8"
-                self.img.step = 1280*3  #320*3
+                self.img.encoding = "mono8" #"bgr8"#"mono8"
+                self.img.step = 320*3  #320*3 #1280*3
                 self.img.data = np.array(gray_img).tobytes()
                 self.img_pub.publish(self.img)
+
+        def image_publisher(self):
+                header = Header(stamp = rospy.Time.now())
+                header.frame_id = "object"
+                self.imgColor.header = header
+                self.imgColor.height = 720
+                self.imgColor.width = 1280
+                self.imgColor.encoding = "bgr8" #"bgr8"#"mono8"
+                self.imgColor.step = 1280*3  #320*3 #1280*3
+                self.imgColor.data = np.array(self.raw_image).tobytes()
+                self.imgColor_pub.publish(self.img)
 
         def coordinate_publisher(self):
                 print('pub data')

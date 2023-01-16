@@ -138,7 +138,7 @@ class Detect():
                 self.img.data = np.array(gray_img).tobytes()
                 self.img_pub.publish(self.img)
 
-        def image_publisher(self):
+        def imageColor_publisher(self):
                 header = Header(stamp = rospy.Time.now())
                 header.frame_id = "object"
                 self.imgColor.header = header
@@ -172,6 +172,7 @@ if __name__ == "__main__":
                 d.streaming()
                 d.object_detect()
                 d.image_publisher()
+                d.imageColor_publisher()
                 print('check obj:  %d', d.check_object())
                 if d.check_object():
                         d.coordinate_publisher()

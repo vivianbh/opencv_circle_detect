@@ -1,0 +1,6 @@
+<launch>
+	<group ns="MAV2">
+		<node name="circle_detector" pkg="circle_detect" type="circle_detector.py" />
+		<node name="camera_extrinsics" pkg="circle_detect" type="camera_extrinsics" />
+	</group>
+</launch>

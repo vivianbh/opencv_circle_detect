@@ -212,3 +212,5 @@ include_directories(
 # catkin_add_nosetests(test)
 add_executable(camera_extrinsics src/camera_extrinsics.cpp)
 target_link_libraries(camera_extrinsics ${catkin_LIBRARIES})
+target_include_directories(camera_extrinsics PRIVATE
+	include/${PROJECT_NAME}/ )

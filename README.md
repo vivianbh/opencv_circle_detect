@@ -5,3 +5,4 @@
 ### Environment
 - realsense SDK
 - pyrealsense2
+- cv2
